@@ -29,10 +29,10 @@ local function xCheck(board, width)
   end
 
   if sum == width or sum == -width then
-    return true;
+    return true
   end
 
-  return false;
+  return false
 end
 
 --args: board = 2d array, x = int, height = int
