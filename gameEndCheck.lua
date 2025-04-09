@@ -2,23 +2,23 @@
 --board is a 3d array ex: 
 local intBoard = {
   {
-    {-1, 1, -1},
+    {-1, -1, -1},
     {-1, 1, -1},
     {-1, -1, 1}
   },
   {
-    {-1, 1, -1},
+    {-1, -1, -1},
+    {-1, -1, -1},
     {0, -1, -1},
-    {0, 0, -1},
   },
   {
-    {-1, 1, 1},
-    {1, -1, 0},
-    {-1, 0, -1},
+    {1, -1, -1},
+    {1, -1, -1},
+    {-1, -1, -1},
   }
 }
 
-local placement = {x = 2, y = 1, z = 1}
+local placement = {x = 2, y = 2, z = 2}
 
 --args: board = 1d array, width = int
 local function xCheck(board, width)
@@ -98,12 +98,98 @@ local function zDownCheck(board, x, y, depth)
   return false
 end
 
-local function threeDiagonalCheck(board, x, y, size)
+--args: board = 3d array, depth = int, x = int, y = int, size = int
+local function threeDiagonalCheck(board, x, y, z, size)
 
-  --checking if x and y can form a diagonal of length size
-  if x ~= y or (size + 1) ~= (x + y) then
+  --checking if x and y coordinates can make a diagonal
+  local viableXLeft = (x == z)
+  local viableXRight = (x == (size - z + 1))
+  local viableYTop = (y == z)
+  local viableYBot = (y == (size - z + 1))
+
+  local viableX = viableXLeft or viableXRight
+  local viableY = viableYTop or viableYBot
+
+  --early stop
+  if ((not viableX) and (not viableY)) then
     return false
   end
+
+  if viableXLeft then
+
+    local sum = 0
+    for index, twoBoard in ipairs(board) do
+      sum = sum + twoBoard[y][index]
+    end
+
+    if sum == size or sum == -size then
+        return true
+    end
+
+  end
+
+  if viableXRight then
+
+    local sum = 0
+    for index, twoBoard in ipairs(board) do
+      sum = sum + twoBoard[y][size - index + 1]
+    end
+
+    if sum == size or sum == -size then
+      return true
+    end
+  end
+
+  if viableYTop then
+
+    local sum = 0
+    for index, twoBoard in ipairs(board) do
+      sum = sum + twoBoard[index][x]
+    end
+
+    if sum == size or sum == -size then
+      return true
+    end
+  end
+
+  if viableYBot then
+
+    local sum = 0
+    for index, twoBoard in ipairs(board) do
+      sum = sum + twoBoard[size - index + 1][x]
+    end
+
+    if sum == size or sum == -size then
+      return true
+    end
+
+  end
+
+  if viableXLeft and viableYTop then
+
+    local sum = 0
+    for index, twoBoard in ipairs(board) do
+      sum = sum + twoBoard[index][index]
+    end
+
+    if sum == size or sum == -size then
+      return true
+    end
+  end
+
+  if viableXRight and viableYBot then
+
+    local sum = 0
+    for index, twoBoard in ipairs(board) do
+      sum = sum + twoBoard[index][size - index + 1]
+    end
+
+    if sum == size or sum == -size then
+      return true
+    end
+  end
+
+  return false
 
 end
 
@@ -112,11 +198,14 @@ local function gameEnd(board, cords)
 
   local size = #board
 
-  print(xCheck(board[cords.z][cords.y], size))
-  print(yCheck(board[cords.z], cords.x, size))
-  print(twoDiagonalCheck(board[cords.z], cords.x, cords.y, size))
-  print(zDownCheck(board, cords.x, cords.y, size))
-  print(threeDiagonalCheck(board, cords.x, cords.y, size))
+  local gameEnded = false
+  gameEnded = gameEnded or xCheck(board[cords.z][cords.y], size)
+  gameEnded = gameEnded or yCheck(board[cords.z], cords.x, size)
+  gameEnded = gameEnded or twoDiagonalCheck(board[cords.z], cords.x, cords.y, size)
+  gameEnded = gameEnded or zDownCheck(board, cords.x, cords.y, size)
+  gameEnded = gameEnded or threeDiagonalCheck(board, cords.x, cords.y, cords.z, size)
+
+  return gameEnded
 end
 
-gameEnd(intBoard, placement)
+print(gameEnd(intBoard, placement))
